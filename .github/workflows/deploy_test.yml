@@ -32,8 +32,6 @@ jobs:
               if: steps.restore_dependencies.outputs.cache-hit == 'false'
               run: yarn
             
-            - run: yarn lint
-
         outputs:
             dependencies_cache_key: dependencies-${{ steps.compute_lockfile_hash.outputs.key }}
 
@@ -86,18 +84,54 @@ jobs:
                   cat << EOF >> .env
                   ${{ secrets.ENV_DEV }}
                   EOF
-                  NODE_ENV=production yarn build
+                  yarn build
             - name: Build STG bundle
               if: steps.restore_bundle.outputs.cache-hit == 'false' && github.ref == 'refs/heads/main'
               run: |
                   cat << EOF >> .env
                   ${{ secrets.ENV_STG }}
                   EOF
-                  NODE_ENV=production yarn build
+                  yarn build
             - name: Build PRD bundle
               if: steps.restore_bundle.outputs.cache-hit == 'false' && github.ref_type == 'tag'
               run: |
                   cat << EOF >> .env
                   ${{ secrets.ENV_PRD }}
                   EOF
-                  NODE_ENV=production yarn build
+                  yarn build
+
+    job_deploy:
+      name: Deploy
+      needs: [job_lint, job_build]
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout current commit (${{ github.sha }})
+          uses: actions/checkout@v3
+
+        - name: Check bundle cache
+          uses: actions/cache@v2
+          with:
+            path: ${{ env.CACHED_BUILD_PATH }}
+            key: build-${{ env.BUILD_CACHE_KEY }}
+
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            aws-access-key-id: ${{ secrets.AWS_KEY }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET }}
+
+        - name: Deploy to dev
+          if: github.ref != 'refs/heads/main'
+          run: |
+            STAGE=dev sls --debug
+
+        - name: Deploy to stg
+          if: github.ref == 'refs/heads/main'
+          run: |
+            STAGE=stg sls --debug
+
+        - name: Deploy to prd 
+          if: github.ref_type == 'tag'
+          run: |
+            STAGE=prd sls --debug
