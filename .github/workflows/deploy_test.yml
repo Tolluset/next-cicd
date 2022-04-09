@@ -1,4 +1,4 @@
-name: antoon-ci-cd
+name: next-ci-cd
 
 on: push
 
@@ -31,6 +31,8 @@ jobs:
             - name: Install Dependencies
               if: steps.restore_dependencies.outputs.cache-hit == 'false'
               run: yarn
+            
+            - run: yarn lint
 
         outputs:
             dependencies_cache_key: dependencies-${{ steps.compute_lockfile_hash.outputs.key }}
