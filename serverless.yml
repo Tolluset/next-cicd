@@ -1,0 +1,14 @@
+# Deploy
+# STAGE=xxx AWS_PROFILE=xxx sls --debug
+
+app: toonzip
+stage: ${env.STAGE}
+
+application:
+  component: "./node_modules/@sls-next/serverless-component"
+  inputs:
+    bucketName: "${app}-web-s3-${stage}"
+    name:
+      defaultLambda: "${app}-lambda-${stage}"
+      apiLambda: "${app}-api-lambda-${stage}"
+      imageLambda: "${app}-image-lambda-${stage}"
