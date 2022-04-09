@@ -142,3 +142,24 @@ jobs:
           if: github.ref_type == 'tag'
           run: |
             STAGE=prd yarn deploy
+
+    job_chromatic:
+      name: Deploy to chromatic
+      needs: [job_install_dependencies, job_lint, job_build]
+      runs-on: ubuntu-latest
+      env:
+        project_token: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+
+      steps:
+        - name: Checkout current commit (${{ github.sha }})
+          uses: actions/checkout@v3
+
+        - name: Check dependencies cache
+          uses: actions/cache@v2
+          with:
+              path: ${{ env.CACHED_DEPENDENCY_PATH }}
+              key: ${{ needs.job_install_dependencies.outputs.dependencies_cache_key }}
+
+        - name: Deploy to chromatic
+          run: |
+            CHROMATIC_PROJECT_TOKEN=$project_token yarn chromatic
