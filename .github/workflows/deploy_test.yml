@@ -131,14 +131,14 @@ jobs:
         - name: Deploy to dev
           if: github.ref != 'refs/heads/main'
           run: |
-            STAGE=dev serverless --debug
+            STAGE=dev yarn deploy
 
         - name: Deploy to stg
           if: github.ref == 'refs/heads/main'
           run: |
-            STAGE=stg serverless --debug
+            STAGE=stg yarn deploy
 
         - name: Deploy to prd 
           if: github.ref_type == 'tag'
           run: |
-            STAGE=prd serverless --debug
+            STAGE=prd yarn deploy
