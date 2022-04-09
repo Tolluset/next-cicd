@@ -102,7 +102,7 @@ jobs:
 
     job_deploy:
       name: Deploy
-      needs: [job_lint, job_build]
+      needs: [job_install_dependencies, job_lint, job_build]
       runs-on: ubuntu-latest
 
       steps:
@@ -113,7 +113,7 @@ jobs:
           uses: actions/cache@v2
           with:
               path: ${{ env.CACHED_DEPENDENCY_PATH }}
-              key: ${{ jobs.job_install_dependencies.outputs.dependencies_cache_key }}
+              key: ${{ needs.job_install_dependencies.outputs.dependencies_cache_key }}
 
         - name: Check bundle cache
           uses: actions/cache@v2
