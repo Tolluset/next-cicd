@@ -113,7 +113,7 @@ jobs:
           uses: actions/cache@v2
           with:
               path: ${{ env.CACHED_DEPENDENCY_PATH }}
-              key: ${{ needs.job_install_dependencies.outputs.dependencies_cache_key }}
+              key: ${{ jobs.job_install_dependencies.outputs.dependencies_cache_key }}
 
         - name: Check bundle cache
           uses: actions/cache@v2
